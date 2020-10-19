@@ -21,7 +21,7 @@ local matchList = {
 } -- add your desired staff weapon ids here
 
 local skills = {}
-skills.skillStartValue = 10
+skills.skillStartValue = 20
 skills.skillStatus = "inactive"
 
 if (config == nil) then
@@ -107,16 +107,6 @@ local function onLoadedSetActiveSkillStatus() -- set the skill's active status b
 end
 
 --in game events
-local function onExerciseSkill(e) -- exercise staff skill instead of blunt weapon for staves
-
-    if e.skill == 4 and checkEquipped() then
-        local hitMod = math.random(1, 5)
-        local skill = skillModule.getSkill("MSS:Staff")
-        skill:progressSkill(config.skillGain + hitMod)
-        return false
-    end
-end
-
 local function onEquipped(e) -- display the skill
 
     for i, match in ipairs(matchList) do
@@ -141,11 +131,59 @@ local function onUnequipped(e) -- hide the skill
     end
 end
 
+local function onExerciseSkill(e) -- exercise staff skill instead of blunt weapon for staves
+
+    if e.skill == 4 and checkEquipped() then
+        local hitMod = math.random(1, 5)
+        local skill = skillModule.getSkill("MSS:Staff")
+        skill:progressSkill(config.skillGain + hitMod)
+        return false
+    end
+end
+
+local function onCalcHitChance(e) -- calculating the hit chance based on custom skill
+
+    local playerHitChance
+    local targetEvasionChance
+
+    local function calcPlayerHitChance()
+
+        local playerLuck = tes3.mobilePlayer.luck.current
+        local playerAgility = tes3.mobilePlayer.agility.current
+        local weaponSkill = skillModule.getSkill("MSS:Staff").value
+        local playerFatigueCurrent = tes3.mobilePlayer.fatigue.current
+        local playerFatigueMax = tes3.mobilePlayer.fatigue.base
+        local fortifyAttackValue = tes3.getEffectMagnitude{reference = tes3.mobilePlayer, effect = tes3.effect.fortifyAttack}
+        local blindValue = tes3.getEffectMagnitude{reference = tes3.mobilePlayer, effect = tes3.effect.blind}
+        playerHitChance = (weaponSkill + (playerAgility / 5) + (playerLuck / 10)) * (0.75 + (0.5 * (playerFatigueCurrent / playerFatigueMax))) + fortifyAttackValue - blindValue
+
+        return playerHitChance
+    end
+
+    local function calcTargetEvasionChance()
+
+        local actorLuck = e.targetMobile.luck.current
+        local actorAgility = e.targetMobile.agility.current
+        local actorFatigueCurrent = e.targetMobile.fatigue.current
+        local actorFatigueMax = e.targetMobile.fatigue.base
+        local actorSanctuaryValue = tes3.getEffectMagnitude{reference = e.targetMobile, effect = tes3.effect.sanctuary}
+        targetEvasionChance = (actorAgility / 5) + (actorLuck / 10) * (0.75 + (0.5 * (actorFatigueCurrent / actorFatigueMax))) + actorSanctuaryValue
+
+        return targetEvasionChance
+    end
+
+    if checkEquipped() then
+        if e.targetMobile ~= nil and e.attackerMobile == tes3.mobilePlayer then
+            e.hitChance = calcPlayerHitChance() - calcTargetEvasionChance()
+        end
+    end
+end
+
 local function onInitialized()
 
+    event.register("OtherSkills:Ready", onSkillReady)
     event.register("loaded", onLoadedSkillsModuleCheck)
     event.register("loaded", onLoadedSetActiveSkillStatus)
-    event.register("OtherSkills:Ready", onSkillReady)
 
     if not config.enabled then
         return
@@ -153,6 +191,7 @@ local function onInitialized()
         event.register("equipped", onEquipped)
         event.register("unequipped", onUnequipped)
         event.register("exerciseSkill", onExerciseSkill)
+        event.register("calcHitChance", onCalcHitChance)
     end
 end
 
