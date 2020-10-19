@@ -21,7 +21,7 @@ local matchList = {
 } -- add your desired staff weapon ids here
 
 local skills = {}
-skills.skillStartValue = 20
+skills.skillStartValue = 10
 skills.skillStatus = "inactive"
 
 if (config == nil) then
@@ -48,7 +48,7 @@ end
 local function onSkillReady() -- create the skill
 
     skillModule.registerSkill(
-         "SS:Staff",
+         "MSS:Staff",
          {
              name = "Staff",
              icon = "Icons/RFD/StaffSkill/InpvStaff.dds",
@@ -107,6 +107,16 @@ local function onLoadedSetActiveSkillStatus() -- set the skill's active status b
 end
 
 --in game events
+local function onExerciseSkill(e) -- exercise staff skill instead of blunt weapon for staves
+
+    if e.skill == 4 and checkEquipped() then
+        local hitMod = math.random(1, 5)
+        local skill = skillModule.getSkill("MSS:Staff")
+        skill:progressSkill(config.skillGain + hitMod)
+        return false
+    end
+end
+
 local function onEquipped(e) -- display the skill
 
     for i, match in ipairs(matchList) do
@@ -131,21 +141,11 @@ local function onUnequipped(e) -- hide the skill
     end
 end
 
-local function onExerciseSkill(e) -- exercise staff skill instead of blunt weapon for staves
-
-    if e.skill == 4 and checkEquipped() then
-        local hitMod = math.random(1, 5)
-        local skill = skillModule.getSkill("SS:Staff")
-        skill:progressSkill(config.skillGain + hitMod)
-        return false
-    end
-end
-
 local function onInitialized()
 
-    event.register("OtherSkills:Ready", onSkillReady)
     event.register("loaded", onLoadedSkillsModuleCheck)
     event.register("loaded", onLoadedSetActiveSkillStatus)
+    event.register("OtherSkills:Ready", onSkillReady)
 
     if not config.enabled then
         return
