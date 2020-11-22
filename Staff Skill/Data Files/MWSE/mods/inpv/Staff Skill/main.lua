@@ -103,7 +103,7 @@ local function onLoadedSetActiveSkillStatus() -- set the skill's active status b
     end
 
     tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
-    event.trigger("OtherSkills:Ready") -- apply changes on load
+    skillModule.updateSkill("MSS:Staff", {active = tes3.player.data.StaffSkill.skillStatus}) -- apply changes on load
 end
 
 --in game events
@@ -113,7 +113,7 @@ local function onEquipped(e) -- display the skill
         if string.find(e.item.id, match) then
             skills.skillStatus = "active"
             tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
-            event.trigger("OtherSkills:Ready")
+            skillModule.updateSkill("MSS:Staff", {active = tes3.player.data.StaffSkill.skillStatus}) -- apply changes
             break
         end
     end
@@ -125,7 +125,7 @@ local function onUnequipped(e) -- hide the skill
         if string.find(e.item.id, match) then
             skills.skillStatus = "inactive"
             tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
-            event.trigger("OtherSkills:Ready")
+            skillModule.updateSkill("MSS:Staff", {active = tes3.player.data.StaffSkill.skillStatus}) -- apply changes
             break
         end
     end
@@ -182,8 +182,8 @@ end
 local function onInitialized()
 
     event.register("OtherSkills:Ready", onSkillReady)
-    event.register("loaded", onLoadedSkillsModuleCheck)
-    event.register("loaded", onLoadedSetActiveSkillStatus)
+    event.register("OtherSkills:Ready", onLoadedSkillsModuleCheck)
+    event.register("OtherSkills:Ready", onLoadedSetActiveSkillStatus)
 
     if not config.enabled then
         return
