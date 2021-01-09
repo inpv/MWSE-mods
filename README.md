@@ -1,6 +1,9 @@
 # MWSE-mods
 A collection of MWSE-Lua mods for TES3:Morrowind.
 
+<p><b>Green Hideout</b></p>
+<p>Enables clean tap water in the Green Hideout player home (interop to use with Ashfall).</p>
+
 <p><b>Sepulchral Curses</b></p>
 <p>Makes robbing tombs and barrows harder by adding a chance of summoning a random angry undead/elemental daedra when opening burial containers.</p>
 
