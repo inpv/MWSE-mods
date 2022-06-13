@@ -15,3 +15,6 @@ A collection of MWSE-Lua mods for TES3:Morrowind.
 
 <p><b>Vanish From Sight</b></p>
 <p>As long as the player is invisible, all hostiles located in the current cell stop combat. Includes configurable fight values for hostiles in MCM. A must-have for any illusionist.</p>
+
+<p><b>Uvirith's Manor Turret Stinkers Ashfall Addon</b></p>
+<p>Lets the player use the crystal in Uvirith's Manor Turret to bathe using Stinkers 3.0 gear.</p>
