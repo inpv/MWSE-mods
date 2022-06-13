@@ -79,7 +79,7 @@ local function spawnCreature() -- spawns the appropriate monster
 
   local function spawnUndead()
     if config.easyMode == true then
-      creatureName = data.leveledRevenantList[math.random(1, #data.leveledRevenantList)]
+      creatureName = tes3.getObject(data.leveledRevenantList[math.random(1, #data.leveledRevenantList)]):pickFrom()
     else
       creatureName = data.revenantList[math.random(1, #data.revenantList)]
     end
