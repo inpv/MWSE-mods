@@ -12,3 +12,6 @@ A collection of MWSE-Lua mods for TES3:Morrowind.
 
 <p><b>Staff Skill</b></p>
 <p>Whenever a staff weapon is equipped, a dedicated Endurance-based Staff skill is used. Includes all staves from the vanilla game, expansions and Tamriel Rebuilt by default.</p>
+
+<p><b>Vanish From Sight</b></p>
+<p>As long as the player is invisible, all hostiles located in the current cell stop combat. Includes configurable fight values for hostiles in MCM. A must-have for any illusionist.</p>
