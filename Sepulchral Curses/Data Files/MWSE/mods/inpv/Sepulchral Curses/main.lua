@@ -1,66 +1,68 @@
 --[[
 -- Sepulchral Curses
--- by inpv, 2020
+-- by inpv, 2020-2022
 ]]
 
---[[ DATA ]]
-local configPath = "sepulchralcurses"
-local config = mwse.loadConfig(configPath)
+local config = require("inpv.Sepulchral Curses.config")
+local data = require("inpv.Sepulchral Curses.data")
+
 local stalhrimVeinActivated = false
 local onSolstheim = false
+local eventActor = nil
 
-if (config == nil) then
-	config = { enabled = true, spawnFrostDaedra = false, pickEquippedOnly = true }
+--[[ OBJECT VALIDATION ]]
+
+local function checkTable(matchName, table) -- matching against respective object list
+  local isMatched = false
+
+    for i, match in ipairs(table) do
+      if string.find(matchName, match) then
+        isMatched = true
+        break
+      end
+    end
+
+  return isMatched
 end
 
-local revenantList = {
-  "ancestor_ghost",
-  "bonelord",
-  "bonewalker",
-  "Bonewalker_Greater",
-  "skeleton",
-  "skeleton archer",
-  "skeleton warrior",
-  "skeleton champion"
-}
+local function checkSpawn(e) -- check if the object can spawn undead at all
+  local canSpawn = false
 
-local bmCreatureList = {
-  "atronach_frost"
-}
+  if config.includeMiscObjects == true then
+    if checkTable(e.target.object.id, data.miscObjectsMatchList) then -- what other objects can spawn undead?
+      canSpawn = true
+    end
+  end
 
-local revenantTauntList = {
-  "Who dares to defile the place of my final resting? Now die!",
-  "Who interrupts my eternal slumber? Die!",
-  "You'll join me soon enough, mortal."
-}
+  if canSpawn == false then
+    if (e.target.object.objectType == tes3.objectType.container) then -- is it even a container?
+      if checkTable(e.target.object.id, data.objectsList) then
+        canSpawn = true
+      end
+    end
+  end
 
-local environmentalEffectList = {
-  "[A grave chill gives you creeping horripilation as you feel a revenant appear behind you]",
-  "[A sudden gust of ice cold wind causes you to freeze for a second]",
-  "[A disturbing presence emerges right behind you]"
-}
+  return canSpawn
+end
 
-local bmEnvironmentalEffectList = {
-  "[You open the chest and feel even colder than before]",
-  "[A thin frosty crust starts to appear on the floor as you open the chest]",
-  "[As you open the chest, you notice the fires inside the barrow has gone dim]"
-}
+--[[ CREATURE SPAWNING ]]
 
-local bmEnvironmentalEffectListStalhrim = {
-  "[As you wave your pick, it gets stuck in the ice. You're not alone here]",
-  "[You feel an alien emanation slipping through the cracks and manifesting behind you]",
-  "[A cold burst springs from the stalhrim vein]"
-}
-
---[[ HELPER FUNCTIONS ]]
-local function isCreatureSpawned()
+local function isCreatureSpawned() -- calculates the spawn chance
   local isSpawned
-  local playerLuck = tes3.mobilePlayer.luck.current -- how lucky the player is not to disturb the dead
-  local playerAgility = tes3.mobilePlayer.agility.current -- how carefully the player opens the container
+  local openActor = eventActor.mobile
+  if openActor == nil then return end -- just in case
+  local openActorLuck = openActor.luck.current -- how lucky the actor is not to disturb the dead
+  local openActorAgility = openActor.agility.current -- how carefully the actor opens the container
 
-  local baseChance = math.random(70, 75)
+  if config.upperBorder <= config.lowerBorder then
+    tes3.messageBox("Incorrect border values, settings restored to default (70-75)")
+    config.lowerBorder = 70
+    config.upperBorder = 75
+  end
+
+  local baseChance = math.random(config.lowerBorder, config.upperBorder)
   local triggerChance = math.random(100)
-  local safeChance = baseChance + math.floor(playerLuck / 10) + math.floor(playerAgility / 10)
+  local safeChance = baseChance + math.floor(openActorLuck / 10) + math.floor(openActorAgility / 10)
 
   if triggerChance <= safeChance then
     isSpawned = false
@@ -71,35 +73,48 @@ local function isCreatureSpawned()
   return isSpawned
 end
 
-local function spawnCreature()
+local function spawnCreature() -- spawns the appropriate monster
 
   local creatureName
 
   local function spawnUndead()
-    creatureName = revenantList[math.random(1, #revenantList)]
+    if config.easyMode == true then
+      creatureName = data.leveledRevenantList[math.random(1, #data.leveledRevenantList)]
+    else
+      creatureName = data.revenantList[math.random(1, #data.revenantList)]
+    end
 
-    tes3.messageBox(revenantTauntList[math.random(1, #revenantTauntList)])
-    tes3.messageBox(environmentalEffectList[math.random(1, #environmentalEffectList)])
+    if config.displayMessages == true then
+      tes3.messageBox(data.revenantTauntList[math.random(1, #data.revenantTauntList)])
+      tes3.messageBox(data.environmentalEffectList[math.random(1, #data.environmentalEffectList)])
+    end
 
     tes3.playSound{ soundPath = "Fx\\magic\\conjH.wav" }
     tes3.playSound{ soundPath = "Fx\\magic\\destH.wav" }
   end
 
-  if config.spawnFrostDaedra == true then
-    if onSolstheim then
-      creatureName = bmCreatureList[math.random(1, #bmCreatureList)]
+
+  if onSolstheim then
+    if config.spawnFrostDaedra == true then
+      creatureName = data.bmCreatureList[math.random(1, #data.bmCreatureList)]
 
       if (stalhrimVeinActivated) then
-        tes3.messageBox(bmEnvironmentalEffectListStalhrim[math.random(1, #bmEnvironmentalEffectListStalhrim)])
+        if config.displayMessages == true then
+          tes3.messageBox(data.bmEnvironmentalEffectListStalhrim[math.random(1, #data.bmEnvironmentalEffectListStalhrim)])
+        end
         tes3.playSound{ soundPath = "Fx\\inpv\\SepulchralCurses\\NordicPickStalhrimHit.wav" }
       else
-        tes3.messageBox(bmEnvironmentalEffectList[math.random(1, #bmEnvironmentalEffectList)])
+        if config.displayMessages == true then
+          tes3.messageBox(data.bmEnvironmentalEffectList[math.random(1, #data.bmEnvironmentalEffectList)])
+        end
       end
 
       tes3.playSound{ soundPath = "Fx\\magic\\conjH.wav" }
       tes3.playSound{ soundPath = "Fx\\magic\\frstH.wav" }
     else
-      spawnUndead()
+      if stalhrimVeinActivated == false then
+        spawnUndead()
+      end
     end
   else
     spawnUndead()
@@ -108,31 +123,93 @@ local function spawnCreature()
   mwscript.placeAtPC{ reference = tes3.player, object = creatureName, direction = 1, distance = 100, count = 1 }
 end
 
---[[ REPETITION REDUCERS ]]
-local function doSpawn(e)
-  if e.target.data.SepulchralCurses == nil then
-    e.target.data.SepulchralCurses = {activated = true}
-    if isCreatureSpawned() then
-      spawnCreature()
+local function doSpawn()
+  if isCreatureSpawned() then
+    spawnCreature()
+  end
+end
+
+--[[ LOCKS AND TRAPS DETECTION ]]
+
+local function writeNodeData(e) -- write the lockNode first to later find whether the player has the key for this container
+  if e.target.lockNode == nil then
+    -- no lock, so no need to write
+  else
+    if e.target.data.SepulchralCurses == nil then -- only write for traps that are not activated yet
+      e.target.data.SepulchralCurses = {lockData = e.target.lockNode}
     end
+  end
+end
+
+local function checkActivated(e)
+  local trapActivated = false
+
+  if e.target.data.SepulchralCurses == nil then
+  elseif e.target.data.SepulchralCurses.activated == true then
+    trapActivated = true
+  end
+
+  return trapActivated
+end
+
+local function checkTrapped(e) -- check the trapped container status
+  local isTrapped = false
+
+  if e.target.lockNode == nil
+  or e.target.lockNode.trap == nil then
+    -- no lock or not trapped, pass
+  elseif e.target.lockNode.trap ~= nil then
+    isTrapped = true
+  end
+
+  return isTrapped
+end
+
+local function checkKey(e) -- check if the player has the key for this container
+  local hasKey = false
+
+  if e.target.data.SepulchralCurses == nil
+  or e.target.data.SepulchralCurses.lockData == nil then
+    -- no lock or not activated yet, pass
+  else
+    if tes3.getItemCount({reference = tes3.player, item = e.target.data.SepulchralCurses.lockData.key}) == 0 then
+    elseif tes3.getItemCount({reference = tes3.player, item = e.target.data.SepulchralCurses.lockData.key}) >= 1 then
+      hasKey = true
+    end
+  end
+
+  return hasKey
+end
+
+local function checkTrappedAndKey(e)
+  if checkTrapped(e) == true then -- let the vanilla trap activate first
+  else
+    if checkKey(e) == true then -- no trap + let the player open freely
+    else
+      if checkActivated(e) == false then
+        doSpawn()
+      else
+        -- the SC trap has already been activated
+      end
+    end
+  end
+end
+
+local function activateStalhrimVeinTrap(e)
+  stalhrimVeinActivated = true -- activate the vein
+
+  if checkActivated(e) == false then
+    doSpawn()
+  else
+    -- the vein has already been activated
+  end
+end
+
+local function markAsActivated(e)
+  if e.target.data.SepulchralCurses == nil then -- mark container as activated before deciding to spawn
+    e.target.data.SepulchralCurses = {activated = true}
   elseif e.target.data.SepulchralCurses.activated == true then
     -- the trap has already been activated
-  end
-end
-
-local function checkLockedAndSpawn(e)
-  if (tes3.getLocked({ reference = e.target })) then
-    return false -- ignoring locked containers
-  else
-    doSpawn(e)
-  end
-end
-
-local function findTombSpawn(e, cell)
-  if string.find(e.target.object.name, "Urn") or string.find(e.target.object.name, "Chest") then
-    if string.find(cell.name, "Tomb") or string.find(cell.name, "Ancestral Vault") or string.find(cell.name, "Burial Cavern") then
-      checkLockedAndSpawn(e)
-    end
   end
 end
 
@@ -142,91 +219,58 @@ local function onActivate(e)
   if not config.enabled then return end
 
   local cell = tes3.getPlayerCell()
+  eventActor = e.activator
 
-  if (e.activator == tes3.player) then
+  if (eventActor == tes3.player)
+  or (eventActor == tes3.npc)
+  or (eventActor == tes3.creature) then -- NPCs and creature companions are no exception
+
     if (cell.isInterior) then
-      if config.spawnFrostDaedra == true then
-        if string.find(cell.name, "Barrow") or string.find(cell.name, "Tombs of Skaalara") or string.find(cell.name, "Glenschul's Tomb") or string.find(cell.name, "Gandrung Caverns") then
-          onSolstheim = true
-          if string.find(e.target.object.name, "Chest") then
-            if stalhrimVeinActivated then
-              stalhrimVeinActivated = false
-            end
-            checkLockedAndSpawn(e)
-          elseif string.find(e.target.object.name, "Stalhrim") and mwscript.getItemCount({reference = tes3.player, item = "bm nordic pick"}) ~= 0 then
+      onSolstheim = checkTable(cell.name, data.bmLocationsMatchList)
+      if onSolstheim == true then
+        if checkSpawn(e) then -- maybe it's a container?
+          if stalhrimVeinActivated then
+            stalhrimVeinActivated = false -- to display the right messages on spawn
+          end
+          writeNodeData(e)
+          checkTrappedAndKey(e)
+          markAsActivated(e)
+        else -- then it's probably a Stalhrim vein
+          if string.find(e.target.object.name, "Stalhrim") and tes3.getItemCount({reference = eventActor, item = "bm nordic pick"}) ~= 0 then
             if config.pickEquippedOnly == true then
-              if mwscript.hasItemEquipped({reference = tes3.player, item = "bm nordic pick"}) then
-                stalhrimVeinActivated = true
-                doSpawn(e)
+              if mwscript.hasItemEquipped({reference = eventActor, item = "bm nordic pick"}) then
+                activateStalhrimVeinTrap(e)
+                markAsActivated(e)
               else
                 if e.target.data.SepulchralCurses == nil then
-                  tes3.messageBox("You don't have a pick in your hands.")
+                  if (eventActor == tes3.player) then
+                    tes3.messageBox("You don't have a pick in your hands.")
+                  elseif (eventActor == tes3.npc) or (eventActor == tes3.creature) then
+                    tes3.messageBox(eventActor.object.name .. " doesn't have a pick readied.")
+                  end
                   return false
                 else
                 -- the grave has been unsealed, so the player doesn't need a pick anymore
                 end
               end
             else
-              stalhrimVeinActivated = true
-              doSpawn(e)
+              activateStalhrimVeinTrap(e)
+              markAsActivated(e)
             end
           end
-        else
-          onSolstheim = false
-          findTombSpawn(e, cell)
         end
       else
-        findTombSpawn(e, cell)
+        if checkTable(cell.name, data.locationsMatchList) then
+          if checkSpawn(e) then
+            writeNodeData(e)
+            checkTrappedAndKey(e)
+            markAsActivated(e)
+          end
+        end
       end
     end
   end
 end
 
+require("inpv.Sepulchral Curses.mcm")
 event.register("activate", onActivate)
-
---[[ MCM ]]
-local function registerModConfig()
-    local mcm = require("mcm.mcm")
-
-    local sidebarDefault = (
-        "Makes robbing tombs and barrows harder by adding a chance of summoning a random angry undead/elemental daedra when opening burial containers."
-    )
-
-    local template = mcm.createTemplate("Sepulchral Curses")
-    template:saveOnClose(configPath, config)
-
-    local page = template:createSideBarPage{
-        description = sidebarDefault
-    }
-
-    page:createOnOffButton{
-        label = "Enable Sepulchral Curses",
-        variable = mcm.createTableVariable{
-            id = "enabled",
-            table = config
-        },
-        description = "Turn this mod on or off."
-    }
-
-    page:createOnOffButton{
-      label = "Frost Atronachs on Solstheim",
-      variable = mcm.createTableVariable{
-          id = "spawnFrostDaedra",
-          table = config
-      },
-      description = "Adds Frost Atronachs to Solstheim barrows."
-    }
-
-    page:createOnOffButton{
-      label = "Stalhrim mining overhaul",
-      variable = mcm.createTableVariable{
-          id = "pickEquippedOnly",
-          table = config
-      },
-      description = "Stalhrim deposits can only be mined with pick equipped."
-    }
-
-    template:register()
-end
-
-event.register("modConfigReady", registerModConfig)
