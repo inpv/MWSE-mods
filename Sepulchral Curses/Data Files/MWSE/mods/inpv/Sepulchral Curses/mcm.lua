@@ -1,5 +1,6 @@
 --[[ MCM ]]
 
+local strings = require("inpv.Sepulchral Curses.strings")
 local config = require("inpv.Sepulchral Curses.config")
 
 local function registerModConfig()
@@ -10,7 +11,7 @@ local function registerModConfig()
     )
 
     local template = mcm.createTemplate("Sepulchral Curses")
-    template:saveOnClose(config.configPath, config)
+    template:saveOnClose(strings.modName, config)
 
     local page = template:createSideBarPage{
         description = sidebarDefault

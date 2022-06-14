@@ -1,4 +1,4 @@
-local configPath = "sepulchralcurses"
+local strings = require("inpv.Sepulchral Curses.strings")
 
 local defaultConfig = {
   enabled = true,
@@ -11,6 +11,6 @@ local defaultConfig = {
   upperBorder = 75
 }
 
-local config = mwse.loadConfig(configPath, defaultConfig)
+local config = mwse.loadConfig(strings.modName, defaultConfig)
 
 return config
