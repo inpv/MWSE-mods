@@ -222,6 +222,16 @@ local function registerModConfig()
         description = "Turn this mod on or off [requires game restart]."
     }
 
+    page:createOnOffButton{
+        label = "Always on display",
+        variable = mcm.createTableVariable{
+            id = "alwayson",
+            table = config,
+            restartRequired = true,
+        },
+        description = "Always show Staff Skill in Other Skills [requires game restart, default on]."
+    }
+
     page:createSlider{
         label = "Skill gain base value",
         description = ("The base amount of skill progress the character gains on a successful staff hit."),
