@@ -226,7 +226,7 @@ local function registerModConfig()
         label = "Skill gain base value",
         description = ("The base amount of skill progress the character gains on a successful staff hit."),
         min = 1,
-        max = 5,
+        max = 10,
         step = 1,
         jump = 5,
         variable = mwse.mcm.createTableVariable{
