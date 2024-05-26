@@ -11,18 +11,10 @@ local configPath = "staffskill"
 local config = mwse.loadConfig(configPath)
 
 local skillModule = require("OtherSkills.skillModule")
-local matchList = {
-    "staff",
-    "stick",
-    "crosier",
-    "stanchion",
-    "TR_m1_SSOW_cursed_i62",
-    "TR_m1_q_TT_7_Reward"
-} -- add your desired staff weapon ids here
 
 local skills = {}
 skills.skillStartValue = 20
-skills.skillStatus = "inactive"
+skills.skillStatus = "active"
 
 if (config == nil) then
 	config = { enabled = true, skillGain = 1 }
@@ -32,11 +24,11 @@ end
 local function checkEquipped() -- check if the equipped weapon is a staff
     local staffEquipped
 
-    for i, match in ipairs(matchList) do
-        if tes3.mobilePlayer.readiedWeapon == nil then staffEquipped = false
-        elseif string.find(tes3.mobilePlayer.readiedWeapon.object.id, match) then
+    if tes3.mobilePlayer.readiedWeapon == nil then
+        staffEquipped = false
+    else
+        if tes3.mobilePlayer.readiedWeapon.object.type == 5 then
             staffEquipped = true
-            break
         else
             staffEquipped = false
         end
@@ -91,15 +83,11 @@ local function onLoadedSetActiveSkillStatus() -- set the skill's active status b
     if not config.enabled then
         skills.skillStatus = "inactive"
     else
-        if checkEquipped() then
-            skills.skillStatus = "active"
-        else
-            skills.skillStatus = "inactive"
-        end
+        skills.skillStatus = "active"
     end
 
     if tes3.player.data.StaffSkill == nil then
-        tes3.player.data.StaffSkill = {skillStatus = "inactive"} -- create the table
+        tes3.player.data.StaffSkill = {skillStatus = "active"} -- create the table
     end
 
     tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
@@ -107,30 +95,6 @@ local function onLoadedSetActiveSkillStatus() -- set the skill's active status b
 end
 
 --in game events
-local function onEquipped(e) -- display the skill
-
-    for i, match in ipairs(matchList) do
-        if string.find(e.item.id, match) then
-            skills.skillStatus = "active"
-            tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
-            skillModule.updateSkill("MSS:Staff", {active = tes3.player.data.StaffSkill.skillStatus}) -- apply changes
-            break
-        end
-    end
-end
-
-local function onUnequipped(e) -- hide the skill
-
-    for i, match in ipairs(matchList) do
-        if string.find(e.item.id, match) then
-            skills.skillStatus = "inactive"
-            tes3.player.data.StaffSkill.skillStatus = skills.skillStatus -- store the state between saves
-            skillModule.updateSkill("MSS:Staff", {active = tes3.player.data.StaffSkill.skillStatus}) -- apply changes
-            break
-        end
-    end
-end
-
 local function onExerciseSkill(e) -- exercise staff skill instead of blunt weapon for staves
 
     if e.skill == 4 and checkEquipped() then
@@ -188,8 +152,6 @@ local function onInitialized()
     if not config.enabled then
         return
     else
-        event.register("equipped", onEquipped)
-        event.register("unequipped", onUnequipped)
         event.register("exerciseSkill", onExerciseSkill)
         event.register("calcHitChance", onCalcHitChance)
     end
@@ -220,16 +182,6 @@ local function registerModConfig()
             restartRequired = true,
         },
         description = "Turn this mod on or off [requires game restart]."
-    }
-
-    page:createOnOffButton{
-        label = "Always on display",
-        variable = mcm.createTableVariable{
-            id = "alwayson",
-            table = config,
-            restartRequired = true,
-        },
-        description = "Always show Staff Skill in Other Skills [requires game restart, default on]."
     }
 
     page:createSlider{
