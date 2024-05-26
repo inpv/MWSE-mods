@@ -1,8 +1,8 @@
 --[[
 -- MWSE Staff Skill
--- by inpv, 2020
+-- by inpv, 2020-2024
 
--- when a staff weapon is equipped, a dedicated staff skill is used
+-- adds a dedicated staff skill for wide blunt 2-handed weapons
 -- requires MWSE and Skills Module
 ]]
 
@@ -164,7 +164,7 @@ local function registerModConfig()
     local mcm = require("mcm.mcm")
 
     local sidebarDefault = (
-        "Whenever a staff weapon is equipped, a dedicated Endurance-based Staff skill is used. Includes all staves from the vanilla game, expansions and Tamriel Rebuilt by default."
+        "Adds a dedicated Endurance-based Staff skill for wide blunt 2-handed weapons. Supports any staves by default."
     )
 
     local template = mcm.createTemplate("MWSE Staff Skill")
@@ -181,12 +181,12 @@ local function registerModConfig()
             table = config,
             restartRequired = true,
         },
-        description = "Turn this mod on or off [requires game restart]."
+        description = "Turn this mod on or off [requires game restart]. On by default. When on, the skill is displayed."
     }
 
     page:createSlider{
         label = "Skill gain base value",
-        description = ("The base amount of skill progress the character gains on a successful staff hit."),
+        description = ("The base amount of skill progress the character gains on a successful staff hit [default = 1]."),
         min = 1,
         max = 10,
         step = 1,
