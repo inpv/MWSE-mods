@@ -53,21 +53,16 @@ local function getItemSkillInfo(item, itemData)
     local skillId = getSkillId(item, objectType)
     local skillReq = getSkillReqFromTable(item.id:lower(), objectType)
 
-    if not skillReq then
-        local baseItemID = getBaseItemID(itemData)
-
-        if baseItemID then
-            skillReq = getSkillReqFromTable(baseItemID, objectType)
-
-            if skillReq then
-                skillReq = skillReq + 5
-                skillReq = math.clamp(skillReq, 5, 100)
-            end
-        end
+    -- Detect if this is a created/enhanted instance (Consistent Enchanting stores ncceEnchantedFrom).
+    local isEnchantedInstance = false
+    if itemData and itemData.data and itemData.data.ncceEnchantedFrom then
+        isEnchantedInstance = true
     end
 
-    -- Item is not in our data tables, so use a generic formula instead depending on type.
-    if not skillReq then
+    -- If it's an enchanted instance, compute requirement from the instance's effective stats
+    -- so tooltip matches actual mechanics (instead of using a table lookup for the base id).
+    if isEnchantedInstance then
+        -- compute using the same generic formulas you use for items not in the table
         if item.isMelee then
             skillReq = ( ( (item.chopMax + item.slashMax + item.thrustMax) / 3 ) * 0.25 ) * ( (item.speed * 2.15) * (item.reach * 1.85) ) * 1.15
         elseif item.isRanged
@@ -77,9 +72,38 @@ local function getItemSkillInfo(item, itemData)
             skillReq = ( item.armorRating * 0.70 + (item.enchantCapacity / 120) ) * 1.4
         end
 
-        -- At this point there's guaranteed to be a skillReq.
         skillReq = math.clamp(skillReq, 5, 100)
         skillReq = math.ceil(skillReq)
+    else
+        -- Not an enchanted instance
+        if not skillReq then
+            local baseItemID = getBaseItemID(itemData)
+
+            if baseItemID then
+                skillReq = getSkillReqFromTable(baseItemID, objectType)
+
+                if skillReq then
+                    skillReq = skillReq + 5
+                    skillReq = math.clamp(skillReq, 5, 100)
+                end
+            end
+        end
+
+        -- Item is not in our data tables, so use a generic formula instead depending on type.
+        if not skillReq then
+            if item.isMelee then
+                skillReq = ( ( (item.chopMax + item.slashMax + item.thrustMax) / 3 ) * 0.25 ) * ( (item.speed * 2.15) * (item.reach * 1.85) ) * 1.15
+            elseif item.isRanged
+            or objectType == tes3.objectType.ammunition then
+                skillReq = item.chopMax * 1.4
+            elseif objectType == tes3.objectType.armor then
+                skillReq = ( item.armorRating * 0.70 + (item.enchantCapacity / 120) ) * 1.4
+            end
+
+            -- At this point there's guaranteed to be a skillReq.
+            skillReq = math.clamp(skillReq, 5, 100)
+            skillReq = math.ceil(skillReq)
+        end
     end
 
     if skillReq <= 5 then
