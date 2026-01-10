@@ -229,7 +229,7 @@ local function updatePenalty()
                 mobSkillBase = skillModule.getSkill("MSS:Staff").value
             end
 
-            if tes3.mobilePlayer.skills[mobSkillId].base < skillReq then
+            if mobSkillBase < skillReq then
                 if object.objectType == tes3.objectType.weapon
                 or object.objectType == tes3.objectType.ammunition then
                     weaponPen = weaponPen + 1
