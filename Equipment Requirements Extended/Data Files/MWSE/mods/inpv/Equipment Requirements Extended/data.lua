@@ -524,6 +524,9 @@ return {
         ["wolfwalkers"] = 30,
         ["wraithguard"] = 5,
         ["wraithguard_jury_rig"] = 5,
+        ["oj_me_boundgreaves"] = 5,
+        ["oj_me_boundpauldronleft"] = 5,
+        ["oj_me_boundpauldronright"] = 5,
     },
     weaponReqs = {
         ["6th bell hammer"] = 50,
@@ -1188,6 +1191,18 @@ return {
         ["wooden staff of shaming"] = 10,
         ["wooden staff of war"] = 10,
         ["wooden staff"] = 5,
+        ["oj_me_boundclaymore"] = 5,
+        ["oj_me_boundclub"] = 5,
+        ["oj_me_bounddaikatana"] = 5,
+        ["oj_me_boundkatana"] = 5,
+        ["oj_me_boundshortsword"] = 5,
+        ["oj_me_boundstaff"] = 5,
+        ["oj_me_boundtanto"] = 5,
+        ["oj_me_boundwakizashi"] = 5,
+        ["oj_me_boundwaraxe"] = 5,
+        ["oj_me_boundwarhammer"] = 5,
+        ["yk_bound_crossbow"] = 5,
+        ["yk_bound_knife"] = 5,
 
         -- Ammunition
         ["arrow of wasting flame"] = 35,
@@ -1279,6 +1294,8 @@ return {
         ["steel bolt"] = 15,
         ["viper arrow"] = 30,
         ["viper_bolt"] = 30,
+        ["yk_bound_arrow"] = 5,
+        ["yk_bound_bolt"] = 5,
     },
     armorClassSkills = {
         [tes3.armorWeightClass.light] = tes3.skill.lightArmor,
