@@ -1,6 +1,7 @@
 local modInfo = require("EquipmentRequirements.modInfo")
 local config = require("EquipmentRequirements.config")
 local data = require("EquipmentRequirements.data")
+local skillModule = require("OtherSkills.skillModule")
 
 local armorPen, weaponPen
 local fatigueTime = 0
@@ -96,6 +97,14 @@ local function reqTooltip(e)
         return
     end
 
+    -- Staff Skill hack
+
+    local name = tes3.skillName[skillId]
+
+    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
+        name = skillModule.getSkill("MSS:Staff").name
+    end
+
     local block = e.tooltip:createBlock()
     block.minWidth = 1
     block.maxWidth = 230
@@ -106,7 +115,7 @@ local function reqTooltip(e)
 
     if skillReq > 0 then
         label = block:createLabel{
-            text = string.format("Requires %s: %u", tes3.skillName[skillId], skillReq),
+            text = string.format("Requires %s: %u", name, skillReq),
         }
     else
         label = block:createLabel{
@@ -118,9 +127,16 @@ local function reqTooltip(e)
 
     -- Mobile skills are off by 1 from MWSE skills.
     local mobSkillId = skillId + 1
+    local mobSkillBase = tes3.mobilePlayer.skills[mobSkillId].base
+
+    -- Staff Skill hack
+
+    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
+        mobSkillBase = skillModule.getSkill("MSS:Staff").value
+    end
 
     -- Make the text either red or green depending on the player's skill.
-    if tes3.mobilePlayer.skills[mobSkillId].base < skillReq then
+    if mobSkillBase < skillReq then
         color = tes3ui.getPalette("health_color")
     else
         color = tes3ui.getPalette("fatigue_color")
@@ -143,11 +159,24 @@ local function onEquip(e)
         return
     end
 
+    -- Staff Skill hack
+
+    local name = tes3.skillName[skillId]
+
+    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
+        name = skillModule.getSkill("MSS:Staff").name
+    end
+
     local mobSkillId = skillId + 1
+    local mobSkillBase = tes3.mobilePlayer.skills[mobSkillId].base
+
+    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
+        mobSkillBase = skillModule.getSkill("MSS:Staff").value
+    end
 
     -- Player's skill is too low, so display a message and prevent equip. Using base instead of current to prevent the
     -- player from cheesing Fortify Skill.
-    if tes3.mobilePlayer.skills[mobSkillId].base < skillReq then
+    if mobSkillBase < skillReq then
         local rationalNames = include("RationalNames.interop")
         local displayName = ( rationalNames and rationalNames.common.getDisplayName(item.id:lower()) ) or item.name
         tes3.messageBox("Your %s skill is too low to equip %s.", tes3.skillName[skillId], displayName)
@@ -168,6 +197,13 @@ local function updatePenalty()
 
         if skillReq then
             local mobSkillId = skillId + 1
+            local mobSkillBase = tes3.mobilePlayer.skills[mobSkillId].base
+
+            -- Staff Skill hack
+
+            if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and object.type == tes3.weaponType.bluntTwoWide then
+                mobSkillBase = skillModule.getSkill("MSS:Staff").value
+            end
 
             if tes3.mobilePlayer.skills[mobSkillId].base < skillReq then
                 if object.objectType == tes3.objectType.weapon
