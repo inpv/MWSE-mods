@@ -40,6 +40,24 @@ local function getSkillId(item, objectType)
     end
 end
 
+local function calculateSkillRequirement(item, objectType)
+    local skillReq = 0
+
+    if item.isMelee then
+        skillReq = (( (item.chopMax + item.slashMax + item.thrustMax) / 3 ) * 0.25) * ((item.speed * 2.15) * (item.reach * 1.85)) * 1.15
+    elseif item.isRanged or objectType == tes3.objectType.ammunition then
+        skillReq = item.chopMax * 1.4
+    elseif objectType == tes3.objectType.armor then
+        skillReq = (item.armorRating * 0.70 + (item.enchantCapacity / 120)) * 1.4
+    end
+
+    -- Clamp and round
+    skillReq = math.clamp(skillReq, 5, 100)
+    skillReq = math.ceil(skillReq)
+
+    return skillReq
+end
+
 -- Returns the skill requirement for an item.
 local function getItemSkillInfo(item, itemData)
     local objectType = item.objectType
@@ -63,17 +81,7 @@ local function getItemSkillInfo(item, itemData)
     -- so tooltip matches actual mechanics (instead of using a table lookup for the base id).
     if isEnchantedInstance then
         -- compute using the same generic formulas you use for items not in the table
-        if item.isMelee then
-            skillReq = ( ( (item.chopMax + item.slashMax + item.thrustMax) / 3 ) * 0.25 ) * ( (item.speed * 2.15) * (item.reach * 1.85) ) * 1.15
-        elseif item.isRanged
-        or objectType == tes3.objectType.ammunition then
-            skillReq = item.chopMax * 1.4
-        elseif objectType == tes3.objectType.armor then
-            skillReq = ( item.armorRating * 0.70 + (item.enchantCapacity / 120) ) * 1.4
-        end
-
-        skillReq = math.clamp(skillReq, 5, 100)
-        skillReq = math.ceil(skillReq)
+        skillReq = calculateSkillRequirement(item, objectType)
     else
         -- Not an enchanted instance
         if not skillReq then
@@ -91,18 +99,8 @@ local function getItemSkillInfo(item, itemData)
 
         -- Item is not in our data tables, so use a generic formula instead depending on type.
         if not skillReq then
-            if item.isMelee then
-                skillReq = ( ( (item.chopMax + item.slashMax + item.thrustMax) / 3 ) * 0.25 ) * ( (item.speed * 2.15) * (item.reach * 1.85) ) * 1.15
-            elseif item.isRanged
-            or objectType == tes3.objectType.ammunition then
-                skillReq = item.chopMax * 1.4
-            elseif objectType == tes3.objectType.armor then
-                skillReq = ( item.armorRating * 0.70 + (item.enchantCapacity / 120) ) * 1.4
-            end
-
+            skillReq = calculateSkillRequirement(item, objectType)
             -- At this point there's guaranteed to be a skillReq.
-            skillReq = math.clamp(skillReq, 5, 100)
-            skillReq = math.ceil(skillReq)
         end
     end
 
