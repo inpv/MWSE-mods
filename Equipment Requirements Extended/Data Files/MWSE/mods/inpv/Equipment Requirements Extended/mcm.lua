@@ -1,5 +1,5 @@
-local modInfo = require("inpv.EquipmentRequirementsExtended.modInfo")
-local config = require("inpv.EquipmentRequirementsExtended.config")
+local modInfo = require("inpv.Equipment Requirements Extended.modInfo")
+local config = require("inpv.Equipment Requirements Extended.config")
 
 local function createPage(template)
     local page = template:createSideBarPage{
@@ -34,7 +34,7 @@ local function createPage(template)
 end
 
 local template = mwse.mcm.createTemplate("Equipment Requirements Extended")
-template:saveOnClose("EquipmentRequirementsExtended", config)
+template:saveOnClose("Equipment Requirements Extended", config)
 
 createPage(template)
 mwse.mcm.register(template)
