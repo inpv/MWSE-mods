@@ -1,5 +1,5 @@
-local modInfo = require("EquipmentRequirementsExtended.modInfo")
-local config = require("EquipmentRequirementsExtended.config")
+local modInfo = require("inpv.EquipmentRequirementsExtended.modInfo")
+local config = require("inpv.EquipmentRequirementsExtended.config")
 
 local function createPage(template)
     local page = template:createSideBarPage{

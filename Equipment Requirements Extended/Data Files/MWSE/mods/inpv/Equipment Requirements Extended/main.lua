@@ -1,6 +1,6 @@
-local modInfo = require("EquipmentRequirementsExtended.modInfo")
-local config = require("EquipmentRequirementsExtended.config")
-local data = require("EquipmentRequirementsExtended.data")
+local modInfo = require("inpv.EquipmentRequirementsExtended.modInfo")
+local config = require("inpv.EquipmentRequirementsExtended.config")
+local data = require("inpv.EquipmentRequirementsExtended.data")
 local skillModule = require("OtherSkills.skillModule")
 
 local armorPen, weaponPen
@@ -342,7 +342,7 @@ end
 event.register("initialized", onInitialized)
 
 local function onModConfigReady()
-    dofile("EquipmentRequirementsExtended.mcm")
+    dofile("inpv.EquipmentRequirementsExtended.mcm")
 end
 
 event.register("modConfigReady", onModConfigReady)
