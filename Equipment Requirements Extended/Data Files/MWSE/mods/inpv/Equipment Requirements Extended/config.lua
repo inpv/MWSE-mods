@@ -1,3 +1,3 @@
-return mwse.loadConfig("EquipmentRequirements", {
+return mwse.loadConfig("EquipmentRequirementsExtended", {
     alternateMode = false,
 })
