@@ -2,7 +2,7 @@
 A collection of MWSE-Lua mods for TES3:Morrowind.
 
 <p><b>Equipment Requirements Extended</b></p>
-<p>A fork of Necrolesian's edit of Equipment Requirements with added support for Skills Module-based misc skills (Staff Skill at the momemt) and Magicka Expanded bound weapons, armor and ammo.</p>
+<p>A fork of Necrolesian's edit of Equipment Requirements with added support for Skills Module-based misc skills (Staff Skill at the moment) and Magicka Expanded bound weapons, armor and ammo.</p>
 
 <p><b>Green Hideout</b></p>
 <p>Enables clean tap water in the Green Hideout player home (interop to use with Ashfall).</p>
