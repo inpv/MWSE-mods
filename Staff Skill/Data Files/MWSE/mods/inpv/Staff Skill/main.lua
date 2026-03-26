@@ -1,6 +1,6 @@
 --[[
 -- MWSE Staff Skill
--- by inpv, 2020-2024
+-- by inpv, 2020-2026
 
 -- adds a dedicated staff skill for wide blunt 2-handed weapons
 -- requires MWSE and Skills Module
@@ -117,7 +117,7 @@ local function onCalcHitChance(e) -- calculating the hit chance based on custom 
         local weaponSkill = skillModule.getSkill("MSS:Staff").value
         local playerFatigueCurrent = tes3.mobilePlayer.fatigue.current
         local playerFatigueMax = tes3.mobilePlayer.fatigue.base
-        local fortifyAttackValue = tes3.getEffectMagnitude{reference = tes3.mobilePlayer, effect = tes3.effect.fortifyAttack}
+        local fortifyAttackValue = tes3.getEffectMagnitude{ reference = tes3.mobilePlayer, effect = tes3.effect.fortifyAttack }
         local blindValue = tes3.getEffectMagnitude{reference = tes3.mobilePlayer, effect = tes3.effect.blind}
         playerHitChance = (weaponSkill + (playerAgility / 5) + (playerLuck / 10)) * (0.75 + (0.5 * (playerFatigueCurrent / playerFatigueMax))) + fortifyAttackValue - blindValue
 
@@ -130,8 +130,9 @@ local function onCalcHitChance(e) -- calculating the hit chance based on custom 
         local actorAgility = e.targetMobile.agility.current
         local actorFatigueCurrent = e.targetMobile.fatigue.current
         local actorFatigueMax = e.targetMobile.fatigue.base
-        local actorSanctuaryValue = tes3.getEffectMagnitude{reference = e.targetMobile, effect = tes3.effect.sanctuary}
-        targetEvasionChance = (actorAgility / 5) + (actorLuck / 10) * (0.75 + (0.5 * (actorFatigueCurrent / actorFatigueMax))) + actorSanctuaryValue
+        local actorSanctuaryValue = tes3.getEffectMagnitude{ reference = e.targetMobile, effect = tes3.effect.sanctuary }
+        local actorChameleonValue = tes3.getEffectMagnitude{ reference = e.targetMobile, effect = tes3.effect.chameleon }
+        targetEvasionChance = (actorAgility / 5) + (actorLuck / 10) * (0.75 + (0.5 * (actorFatigueCurrent / actorFatigueMax))) + actorSanctuaryValue + (chameleon / 5)
 
         return targetEvasionChance
     end
