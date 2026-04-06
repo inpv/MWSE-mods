@@ -71,36 +71,38 @@ local function getItemSkillInfo(item, itemData)
     local skillId = getSkillId(item, objectType)
     local skillReq = getSkillReqFromTable(item.id:lower(), objectType)
 
-    -- Detect if this is a created/enhanted instance (Consistent Enchanting stores ncceEnchantedFrom).
-    local isEnchantedInstance = false
-    if itemData and itemData.data and itemData.data.ncceEnchantedFrom then
-        isEnchantedInstance = true
-    end
-
-    -- If it's an enchanted instance, compute requirement from the instance's effective stats
-    -- so tooltip matches actual mechanics (instead of using a table lookup for the base id).
-    if isEnchantedInstance then
-        -- compute using the same generic formulas you use for items not in the table
-        skillReq = calculateSkillRequirement(item, objectType)
-    else
-        -- Not an enchanted instance
-        if not skillReq then
-            local baseItemID = getBaseItemID(itemData)
-
-            if baseItemID then
-                skillReq = getSkillReqFromTable(baseItemID, objectType)
-
-                if skillReq then
-                    skillReq = skillReq + 5
-                    skillReq = math.clamp(skillReq, 5, 100)
-                end
-            end
+    if not skillReq then
+        -- Detect if this is a created/enhanted instance (Consistent Enchanting stores ncceEnchantedFrom).
+        local isEnchantedInstance = false
+        if itemData and itemData.data and itemData.data.ncceEnchantedFrom then
+            isEnchantedInstance = true
         end
 
-        -- Item is not in our data tables, so use a generic formula instead depending on type.
-        if not skillReq then
+        -- If it's an enchanted instance, compute requirement from the instance's effective stats
+        -- so tooltip matches actual mechanics (instead of using a table lookup for the base id).
+        if isEnchantedInstance then
+            -- compute using the same generic formulas you use for items not in the table
             skillReq = calculateSkillRequirement(item, objectType)
-            -- At this point there's guaranteed to be a skillReq.
+        else
+            -- Not an enchanted instance
+            if not skillReq then
+                local baseItemID = getBaseItemID(itemData)
+
+                if baseItemID then
+                    skillReq = getSkillReqFromTable(baseItemID, objectType)
+
+                    if skillReq then
+                        skillReq = skillReq + 5
+                        skillReq = math.clamp(skillReq, 5, 100)
+                    end
+                end
+            end
+
+            -- Item is not in our data tables, so use a generic formula instead depending on type.
+            if not skillReq then
+                skillReq = calculateSkillRequirement(item, objectType)
+                -- At this point there's guaranteed to be a skillReq.
+            end
         end
     end
 
