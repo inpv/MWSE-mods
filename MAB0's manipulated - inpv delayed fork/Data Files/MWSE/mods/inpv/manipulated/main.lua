@@ -5,7 +5,7 @@ local this = {
 }
 
 local function createManipulationEffectCrimeTriggerer()
-  this.manipulationEffectCrimeTriggererModule = require( this.metadataController.getModulePath( this.metadataController.get().modules.manipulationEffectCrimeTriggerer ) ).new()
+  this.manipulationEffectCrimeTriggererModule = require( this.metadataController.getModulePath( this.metadataController.get().modules.manipulationEffectCrimeTriggerer ) ).new( this.mcm.getConfig() )
 end
 
 local function appendModuleDataToManipulationEffectCrimeTriggerer()

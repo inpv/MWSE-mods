@@ -7,12 +7,24 @@ local this = {
     demoralizeHumanoidEnabled = true,
     frenzyHumanoidEnabled = true,
     rallyHumanoidEnabled = true,
-    charmEnabled = true
+    charmEnabled = true,
+    highSkillPreventsCrime = true,
+    crimeAvoidanceThreshold = 100
   },
 }
 
 local function loadConfig()
-  this.config = mwse.loadConfig( this.id ) or this.config
+  local savedConfig = mwse.loadConfig( this.id )
+  if savedConfig then
+    this.config = savedConfig
+    -- safely add new settings if they are missing from an old save file
+    if this.config.bHighSkillPreventsCrime == nil then
+      this.config.bHighSkillPreventsCrime = true
+    end
+    if this.config.iCrimeAvoidanceThreshold == nil then
+      this.config.iCrimeAvoidanceThreshold = 100
+    end
+  end
 end
 
 local function registerMcm()
@@ -72,6 +84,24 @@ local function registerMcm()
       table = this.config
     } )
   } )
+
+  page:createOnOffButton({
+    label = "Enable Crime Avoidance with high Illusion skill",
+    variable = mwse.mcm.createTableVariable({
+      id = "highSkillPreventsCrime",
+      table = this.config
+    })
+  })
+
+  page:createSlider({
+    label = "Skill Threshold for Crime Avoidance (Default 100)",
+    min = 0,
+    max = 100,
+    variable = mwse.mcm.createTableVariable({
+      id = "crimeAvoidanceThreshold",
+      table = this.config
+    })
+  })
 
   mwse.mcm.register( template )
 end

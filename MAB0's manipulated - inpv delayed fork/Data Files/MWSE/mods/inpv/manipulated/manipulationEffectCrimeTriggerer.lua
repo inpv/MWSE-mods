@@ -1,6 +1,7 @@
 local this = {
   modulesData = nil,
-  affectedVictims = nil
+  affectedVictims = nil,
+  config = nil
 }
 
 local function assertModuleDataCorrectness( moduleData )
@@ -16,6 +17,11 @@ local function assertModuleDataCorrectness( moduleData )
   local _
   _ = isTable() or ( printMessage() and assert( false, "Error when initializing manipulationEffectCrimerTriggerer. 'moduleData' must be a table." ) )
   _ = hasMagicEffectIdProperty() or ( printMessage() and assert( false, "Error when initializing manipulationEffectCrimerTriggerer. 'moduleData' must have a number property named magicEffectId." ) )
+end
+
+-- Spell detection check
+local function isCrimeDetectable(spellTickData)
+	return not ((this.config.highSkillPreventsCrime) and (spellTickData.caster.mobile.illusion.current >= this.config.crimeAvoidanceThreshold))
 end
 
 -- Spell expiration check
@@ -115,13 +121,19 @@ local function onSpellTick( spellTickData )
   if( targetIsNPC( spellTickData )
       and casterIsPlayer( spellTickData )
       and isCriminalEffect( spellTickData )
-      and isEffectExpired( spellTickData ) ) then   -- spell expiration check
+      and isEffectExpired( spellTickData ) then
+      and isCrimeDetectable( spellTickData ) ) then
     reportCrime( spellTickData )
   end
 end
 
 return {
-  new = function()
+  new = function( config )
+    this.config = config or {
+      highSkillPreventsCrime = true,
+      crimeAvoidanceThreshold = 100
+    }   -- safe defaults in case MCM hasn't saved yet
+
     return {
       appendModuleData = function( moduleData )
         assertModuleDataCorrectness( moduleData )
