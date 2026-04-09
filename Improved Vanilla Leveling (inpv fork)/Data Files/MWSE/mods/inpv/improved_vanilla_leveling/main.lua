@@ -279,9 +279,32 @@ local function OnSkillRaised(e)
     UpdateLpa(i)
 end
 
+local function OnOtherSkillRaised(e)
+    -- Handle skill level-ups from Skills Module custom skills (e.g. Ashfall Survival, Staff Skill, etc.)
+    -- Skills Module fires "OtherSkills:SkillRaised" when a custom skill's level increases,
+    -- passing the skill data object as e.skill. Unlike vanilla skillRaised, it does not go through
+    -- the engine's exerciseSkill path, so we must handle it explicitly here.
+    if not chargen_complete or save_data == nil then return end
+    UpdateCaps()
+    local mp = tes3.mobilePlayer
+    local skillData = e.skill
+    if not skillData or skillData.attribute == nil then return end
+    local i = skillData.attribute + 1  -- IVL uses 1-based attribute indices
+    -- Detect how many levelupsPerAttribute the custom skill added (same logic as OnSkillRaised).
+    local levelup_inc = mp.levelupsPerAttribute[i] - save_data.lpa_cache[i]
+    if levelup_inc <= 0 then return end  -- nothing new to process
+    save_data.skillup_count[i] = save_data.skillup_count[i] + levelup_inc
+    CleanupCounts(i)
+    CheckForAttributeIncrease(i)  -- may grant an inter-level attribute increase immediately
+    UpdateLpa(i)
+end
+
 local function CheckForLpaIncrease()
     -- This function is necessary because other mods will change levelupsPerAttribute without raising any events
     -- e.g., anything using Skills Module, Ashfall, etc.
+    -- With the OtherSkills:SkillRaised handler above, Skills Module mods that fire that event are now
+    -- handled in real time. This fallback still catches any remaining cases (mods that modify
+    -- levelupsPerAttribute silently, or Skills Module mods that do not fire the event).
     -- Update levelupsPerAttribute to the correct value, but don't raise any attributes. That will only happen after
     -- level up or when raising a skill that shares the same governing attribute.
     local mp = tes3.mobilePlayer
@@ -401,10 +424,10 @@ local function OnMenuStatLevelTooltip(e)
     local help_label = layout:createLabel({
         text = [[C = Current attribute value
 Current base value of the attribute, unmodified by effects.
-    
+
 M = Maximum attribute potential
 Maximum value this attribute can be raised to by skill increases without gaining a character level.
-    
+
 P = Progress toward attribute increase
 Amount of skill increases currently "saved" (if positive) or "owed" (if negative).]]
     })
@@ -446,6 +469,7 @@ local function OnInitialized()
         event.register('uiActivated', OnMenuStatActivated, { filter = 'MenuStat' })
         event.register('loaded', OnLoaded)
         event.register('skillRaised', OnSkillRaised)
+        event.register('OtherSkills:SkillRaised', OnOtherSkillRaised)
         event.register('preLevelUp', OnPreLevelUp)
         event.register('levelUp', OnLevelUp)
         event.register('onSave', OnSave)
