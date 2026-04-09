@@ -20,7 +20,7 @@ A collection of MWSE-Lua mods for TES3:Morrowind.
 <p>Whenever a staff weapon is equipped, a dedicated Endurance-based Staff skill is used. Includes all staves from the vanilla game, expansions and Tamriel Rebuilt by default.</p>
 
 <p><b>Target Dummy</b></p>
-<p>Turns training dummies in forts and guildhalls etc. into real objects that you can practice on dynamically via MWSE.</p>
+<p>Turns training dummies in forts and guildhalls etc. into real objects that you can practice on dynamically via MWSE. Originally made by Merlord.</p>
 
 <p><b>Uvirith's Manor Turret Stinkers Ashfall Addon</b></p>
 <p>Lets the player use the crystal in Uvirith's Manor Turret to bathe using Stinkers 3.0 gear with the help of an Ashfall interop.</p>
