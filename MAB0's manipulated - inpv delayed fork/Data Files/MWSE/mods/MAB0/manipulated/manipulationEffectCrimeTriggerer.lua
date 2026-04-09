@@ -18,6 +18,11 @@ local function assertModuleDataCorrectness( moduleData )
   _ = hasMagicEffectIdProperty() or ( printMessage() and assert( false, "Error when initializing manipulationEffectCrimerTriggerer. 'moduleData' must have a number property named magicEffectId." ) )
 end
 
+-- Spell expiration check
+local function isEffectExpired(e)
+	return (e.effectInstance.state == tes3.spellState.ending)
+end
+
 local function targetIsNPC( spellTickData )
   -- in some circumstances, target may ben not set.
   if( spellTickData.target == nil ) then
@@ -107,7 +112,10 @@ local function reportCrime( spellTickData )
 end
 
 local function onSpellTick( spellTickData )
-  if( targetIsNPC( spellTickData ) and casterIsPlayer( spellTickData ) and isCriminalEffect( spellTickData ) ) then
+  if( targetIsNPC( spellTickData )
+      and casterIsPlayer( spellTickData )
+      and isCriminalEffect( spellTickData )
+      and isEffectExpired( spellTickData ) ) then   -- spell expiration check
     reportCrime( spellTickData )
   end
 end
