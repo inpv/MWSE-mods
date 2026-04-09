@@ -1,6 +1,6 @@
-local config = require('merz.improved_vanilla_leveling.config')
+local config = require('inpv.improved_vanilla_leveling.config')
 local function SetupMenu()
-    local template = mwse.mcm.createTemplate({ name = 'Improved Vanilla Leveling' })
+    local template = mwse.mcm.createTemplate({ name = 'Improved Vanilla Leveling (inpv fork)' })
     template:saveOnClose('improved_vanilla_leveling', config)
     template:register()
     local preferences = template:createSideBarPage({ label = 'Preferences' })

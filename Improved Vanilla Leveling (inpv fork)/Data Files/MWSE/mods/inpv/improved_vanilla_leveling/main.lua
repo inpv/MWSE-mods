@@ -1,4 +1,4 @@
-local mod = '[Improved Vanilla Leveling]'
+local mod = '[Improved Vanilla Leveling (inpv fork)]'
 local version = '1.8'
 local data_version = '1.1'
 
@@ -13,8 +13,8 @@ if mwse.buildDate == nil or mwse.buildDate < 20200530 then
     return
 end
 
-local config = require('merz.improved_vanilla_leveling.config')
-require('merz.improved_vanilla_leveling.mcm')
+local config = require('inpv.improved_vanilla_leveling.config')
+require('inpv.improved_vanilla_leveling.mcm')
 local save_data, attributes, ratio, is_capped, has_tooltip, has_fortify_max, iLevelUp10Mult, start_base_health, start_base_end
 local chargen_complete = false
 
