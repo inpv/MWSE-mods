@@ -45,14 +45,14 @@ local function ensureInitializationIsDone()
 end
 
 local function onRegisterMcm()
-  this.mcm = require( "MAB0.manipulated.mcm" ).new()
+  this.mcm = require( "inpv.manipulated.mcm" ).new()
 end
 event.register( "modConfigReady", onRegisterMcm )
 
 local function onInitialized()
   this.metadataController = require( "MAB0.metadataController" ).new( {
     modName = "manipulated",
-    modPath = "MAB0.manipulated.",
+    modPath = "inpv.manipulated.",
     requires = {
       [ "MAB0.version" ] = { major = 1, minor = 0, patch = 1 }
     },

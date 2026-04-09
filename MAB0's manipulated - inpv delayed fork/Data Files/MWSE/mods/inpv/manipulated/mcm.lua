@@ -28,7 +28,7 @@ local function loadConfig()
 end
 
 local function registerMcm()
-  local localeStrings = require( "MAB0.manipulated.localeStrings" )
+  local localeStrings = require( "inpv.manipulated.localeStrings" )
   local locale = require( "MAB0.locale" ).new( localeStrings )
 
   local template = mwse.mcm.createTemplate( this.name )
