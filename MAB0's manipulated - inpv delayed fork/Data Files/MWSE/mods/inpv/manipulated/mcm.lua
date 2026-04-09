@@ -18,11 +18,11 @@ local function loadConfig()
   if savedConfig then
     this.config = savedConfig
     -- safely add new settings if they are missing from an old save file
-    if this.config.bHighSkillPreventsCrime == nil then
-      this.config.bHighSkillPreventsCrime = true
+    if this.config.highSkillPreventsCrime == nil then
+      this.config.highSkillPreventsCrime = true
     end
-    if this.config.iCrimeAvoidanceThreshold == nil then
-      this.config.iCrimeAvoidanceThreshold = 100
+    if this.config.crimeAvoidanceThreshold == nil then
+      this.config.crimeAvoidanceThreshold = 100
     end
   end
 end
