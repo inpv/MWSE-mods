@@ -1,6 +1,6 @@
 local this = {
   id = "MAB0_manipulated",
-  name = "MetaBarj0's manipulated",
+  name = "MetaBarj0's manipulated (inpv delayed fork)",
   config = {
     calmHumanoidEnabled = true,
     commandHumanoidEnabled = true,
