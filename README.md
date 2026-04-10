@@ -7,6 +7,9 @@ A collection of MWSE-Lua mods for TES3:Morrowind.
 <p><b>Green Hideout</b></p>
 <p>Enables clean tap water in the Green Hideout player home (interop to use with Ashfall).</p>
 
+<p><b>Improved Vanilla Leveling (inpv fork)</b></p>
+<p>A fork of Improved Vanilla Leveling which tracks all Skills Module based skills as vanilla ones by default.</p>
+
 <p><b>MAB0's manipulated - inpv delayed fork</b></p>
 <p>A fork of MAB0's manipulated mod with the addition of spell expiration mechanic (NPCs who saw the effect application report it as a crime only after the effect expires, like how Charm Person works in D&D), also adds crime avoidance for high enough Illusion skill (100 by default, configurable in MCM).</p>
 

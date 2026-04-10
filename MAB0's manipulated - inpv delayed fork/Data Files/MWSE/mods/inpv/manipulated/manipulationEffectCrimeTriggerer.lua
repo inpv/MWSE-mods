@@ -121,7 +121,7 @@ local function onSpellTick( spellTickData )
   if( targetIsNPC( spellTickData )
       and casterIsPlayer( spellTickData )
       and isCriminalEffect( spellTickData )
-      and isEffectExpired( spellTickData ) then
+      and isEffectExpired( spellTickData )
       and isCrimeDetectable( spellTickData ) ) then
     reportCrime( spellTickData )
   end
