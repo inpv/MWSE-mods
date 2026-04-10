@@ -125,8 +125,12 @@ local function reqTooltip(e)
 
     local name = tes3.skillName[skillId]
 
-    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
-        name = skillModule.getSkill("MSS:Staff").name
+    if skillModule then
+        if skillModule.getSkill("MSS:Staff") then
+            if skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
+                name = skillModule.getSkill("MSS:Staff").name
+            end
+        end
     end
 
     local block = e.tooltip:createBlock()
@@ -155,8 +159,12 @@ local function reqTooltip(e)
 
     -- Staff Skill hack
 
-    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
-        mobSkillBase = skillModule.getSkill("MSS:Staff").value
+    if skillModule then
+        if skillModule.getSkill("MSS:Staff") then
+            if skillModule.getSkill("MSS:Staff").active == "active" and e.object.type == tes3.weaponType.bluntTwoWide then
+                mobSkillBase = skillModule.getSkill("MSS:Staff").value
+            end
+        end
     end
 
     -- Make the text either red or green depending on the player's skill.
@@ -187,15 +195,23 @@ local function onEquip(e)
 
     local name = tes3.skillName[skillId]
 
-    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
-        name = skillModule.getSkill("MSS:Staff").name
+    if skillModule then
+        if skillModule.getSkill("MSS:Staff") then
+            if skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
+                name = skillModule.getSkill("MSS:Staff").name
+            end
+        end
     end
 
     local mobSkillId = skillId + 1
     local mobSkillBase = tes3.mobilePlayer.skills[mobSkillId].base
 
-    if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
-        mobSkillBase = skillModule.getSkill("MSS:Staff").value
+    if skillModule then
+        if skillModule.getSkill("MSS:Staff") then
+            if skillModule.getSkill("MSS:Staff").active == "active" and item.type == tes3.weaponType.bluntTwoWide then
+                mobSkillBase = skillModule.getSkill("MSS:Staff").value
+            end
+        end
     end
 
     -- Player's skill is too low, so display a message and prevent equip. Using base instead of current to prevent the
@@ -225,8 +241,12 @@ local function updatePenalty()
 
             -- Staff Skill hack
 
-            if skillModule and skillModule.getSkill("MSS:Staff").active == "active" and object.type == tes3.weaponType.bluntTwoWide then
-                mobSkillBase = skillModule.getSkill("MSS:Staff").value
+            if skillModule then
+                if skillModule.getSkill("MSS:Staff") then
+                    if skillModule.getSkill("MSS:Staff").active == "active" and object.type == tes3.weaponType.bluntTwoWide then
+                        mobSkillBase = skillModule.getSkill("MSS:Staff").value
+                    end
+                end
             end
 
             if mobSkillBase < skillReq then
