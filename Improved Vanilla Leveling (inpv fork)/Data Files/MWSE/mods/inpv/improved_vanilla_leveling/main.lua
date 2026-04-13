@@ -2,6 +2,9 @@ local mod = '[Improved Vanilla Leveling (inpv fork)]'
 local version = '1.8'
 local data_version = '1.1'
 
+local skillsModule = include("SkillsModule")
+if not skillsModule then return end
+
 local function OutOfDate()
     local msg = 'MWSE is out of date! Update to use this mod.'
     tes3.messageBox(mod .. '\n' .. msg)
@@ -285,18 +288,29 @@ local function OnOtherSkillRaised(e)
     -- passing the skill data object as e.skill. Unlike vanilla skillRaised, it does not go through
     -- the engine's exerciseSkill path, so we must handle it explicitly here.
     if not chargen_complete or save_data == nil then return end
-    UpdateCaps()
-    local mp = tes3.mobilePlayer
+    -- UpdateCaps() -- rewrite the function to  update the other skills
+    -- The local object from IVL, where the skill data is stored
+    local mp = save_data
+
+    -- The object data for SkillsModule skill
     local skillData = e.skill
-    if not skillData or skillData.attribute == nil then return end
-    local i = skillData.attribute + 1  -- IVL uses 1-based attribute indices
+    if not skillData or skillData.id == nil then return end
+    local skillId = skillData.id
+    -- Getting the Skills object from OtherSkills (needs to be required - or maybe included)
+    local skillModuleData = SkillsModule.getSkill(skillId)
+
+
+
     -- Detect how many levelupsPerAttribute the custom skill added (same logic as OnSkillRaised).
-    local levelup_inc = mp.levelupsPerAttribute[i] - save_data.lpa_cache[i]
-    if levelup_inc <= 0 then return end  -- nothing new to process
-    save_data.skillup_count[i] = save_data.skillup_count[i] + levelup_inc
-    CleanupCounts(i)
-    CheckForAttributeIncrease(i)  -- may grant an inter-level attribute increase immediately
-    UpdateLpa(i)
+    -- need to set it up first - no attribute param
+    -- new from the ground up formula to detect skills modules levels up per attribute
+    -- ???
+    -- local levelup_inc = skillModuleData.level - save_data.lpa_cache[i] -- there's no "i" yet, nneed to populate the new data
+    -- if levelup_inc <= 0 then return end  -- nothing new to process
+    -- save_data.skillup_count[i] = save_data.skillup_count[i] + levelup_inc
+    -- CleanupCounts(i) -- rewrite the function to  update the other skills
+    -- CheckForAttributeIncrease(i) -- rewrite the function to  update the other skills
+    -- UpdateLpa(i) -- rewrite the function to  update the other skills
 end
 
 local function CheckForLpaIncrease()
@@ -469,7 +483,7 @@ local function OnInitialized()
         event.register('uiActivated', OnMenuStatActivated, { filter = 'MenuStat' })
         event.register('loaded', OnLoaded)
         event.register('skillRaised', OnSkillRaised)
-        event.register('OtherSkills:SkillRaised', OnOtherSkillRaised)
+        -- event.register('SkillsModule:skillRaised', OnOtherSkillRaised) -- not yet ready to include the event
         event.register('preLevelUp', OnPreLevelUp)
         event.register('levelUp', OnLevelUp)
         event.register('onSave', OnSave)
