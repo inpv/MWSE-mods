@@ -125,6 +125,7 @@ local function AddSaveData()
         save_data.lpa_cache = {}
         save_data.skillup_count = {}
         save_data.attribute_count = {}
+        save_data.sm_level_cache = {} -- tracks last-seen level for SM skills
         for i = 1, #mp.attributes do
             save_data.attribute_caps[i] = 0
             save_data.lpa_cache[i] = mp.levelupsPerAttribute[i]
@@ -139,6 +140,8 @@ local function AddSaveData()
             save_data.attribute_caps[i] = save_data.attribute_caps[i] - mp.attributes[i].base
         end
     end
+    -- Ensure sm_level_cache exists on old saves that predate this field
+    save_data.sm_level_cache = save_data.sm_level_cache or {}
 end
 
 -- Check for character generation to be complete, then turn this off.
@@ -283,34 +286,42 @@ local function OnSkillRaised(e)
 end
 
 local function OnOtherSkillRaised(e)
-    -- Handle skill level-ups from Skills Module custom skills (e.g. Ashfall Survival, Staff Skill, etc.)
-    -- Skills Module fires "OtherSkills:SkillRaised" when a custom skill's level increases,
-    -- passing the skill data object as e.skill. Unlike vanilla skillRaised, it does not go through
-    -- the engine's exerciseSkill path, so we must handle it explicitly here.
     if not chargen_complete or save_data == nil then return end
-    -- UpdateCaps() -- rewrite the function to  update the other skills
-    -- The local object from IVL, where the skill data is stored
-    local mp = save_data
 
-    -- The object data for SkillsModule skill
     local skillData = e.skill
     if not skillData or skillData.id == nil then return end
+
+    -- skillData.attribute is accessible: Skill.__index falls back to constructor
+    -- params, which includes the 'attribute' field passed to registerSkill().
+    local attribute = skillData.attribute
+    if attribute == nil then return end  -- skill was registered without an attribute; skip
+
+    local i = attribute + 1  -- convert 0-based tes3.attribute to 1-based table index
+    if not save_data.skillup_count[i] then return end  -- safety check
+
     local skillId = skillData.id
-    -- Getting the Skills object from OtherSkills (needs to be required - or maybe included)
-    local skillModuleData = SkillsModule.getSkill(skillId)
+    local newLevel = e.level  -- e.level is the post-raise skill level (see Skill:levelUp)
 
+    -- Lazy init: if this is the first event we see for this skill on this character,
+    -- treat this single raise as 1 level-up (Skills Module always raises one level
+    -- at a time via exercise(), so this is always correct).
+    local lastLevel = save_data.sm_level_cache[skillId]
+    if lastLevel == nil then
+        lastLevel = newLevel - 1
+    end
 
+    local levelup_inc = newLevel - lastLevel
+    save_data.sm_level_cache[skillId] = newLevel  -- update cache before any early returns
 
-    -- Detect how many levelupsPerAttribute the custom skill added (same logic as OnSkillRaised).
-    -- need to set it up first - no attribute param
-    -- new from the ground up formula to detect skills modules levels up per attribute
-    -- ???
-    -- local levelup_inc = skillModuleData.level - save_data.lpa_cache[i] -- there's no "i" yet, nneed to populate the new data
-    -- if levelup_inc <= 0 then return end  -- nothing new to process
-    -- save_data.skillup_count[i] = save_data.skillup_count[i] + levelup_inc
-    -- CleanupCounts(i) -- rewrite the function to  update the other skills
-    -- CheckForAttributeIncrease(i) -- rewrite the function to  update the other skills
-    -- UpdateLpa(i) -- rewrite the function to  update the other skills
+    if levelup_inc <= 0 then return end
+
+    -- From here, this is structurally identical to OnSkillRaised — the helper
+    -- functions are fully generic and need no changes.
+    UpdateCaps()
+    save_data.skillup_count[i] = save_data.skillup_count[i] + levelup_inc
+    CleanupCounts(i)
+    CheckForAttributeIncrease(i)
+    UpdateLpa(i)
 end
 
 local function CheckForLpaIncrease()
@@ -483,7 +494,7 @@ local function OnInitialized()
         event.register('uiActivated', OnMenuStatActivated, { filter = 'MenuStat' })
         event.register('loaded', OnLoaded)
         event.register('skillRaised', OnSkillRaised)
-        -- event.register('SkillsModule:skillRaised', OnOtherSkillRaised) -- not yet ready to include the event
+        event.register('SkillsModule:skillRaised', OnOtherSkillRaised)
         event.register('preLevelUp', OnPreLevelUp)
         event.register('levelUp', OnLevelUp)
         event.register('onSave', OnSave)
