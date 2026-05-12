@@ -5,13 +5,19 @@ local mod = {
     cf = {
         onOff               = true,
         conjurationRequired = 70,
+        blockBlackSoulGems  = true,
+        blockAzurasStar     = true,
     }
 }
+
 local cf = mwse.loadConfig(mod.name, mod.cf)
+
 local framework = include("OperatorJack.MagickaExpanded.magickaExpanded")
 if not framework then return end
 tes3.claimSpellEffectId("soulRelease", 787)
 
+-- If Seph's NPC Soul Trapping is installed, respect its black soul gem registry
+local sephInterop = include("seph.npcSoulTrapping.interop")
 
 ---comment
 ---@param e table|deathEventData
@@ -48,6 +54,22 @@ local function valid(summon)
     end
     return false
 end
+
+-- Returns true if this soul gem is a black soul gem (Soul Cairn-bound).
+-- Checks Seph's known gem, Azura's Star, and any gems other mods registered
+-- via Seph's interop, but works fine even if Seph's mod is not installed.
+local function isBlackSoulGem(soulGem)
+    if not soulGem then return false end
+    local id = soulGem.id:lower()
+    -- Seph's NPC Soul Trapping black soul gem
+    if id == "AB_Misc_SoulGemBlack" then return true end
+    -- Azura's Star (player-configurable)
+    if cf.blockAzurasStar and id == "misc_soulgem_azura" then return true end
+    -- Any additional gems registered by other mods through Seph's interop
+    if sephInterop and sephInterop.blackSoulGems[id] then return true end
+    return false
+end
+
 ---comment
 ---@param e table|activateEventData
 event.register("activate", function(e)
@@ -93,6 +115,7 @@ local function onCollision(e)
     if not position then return end
     local caster = e.sourceInstance.caster and e.sourceInstance.caster.mobile
     local summon
+    local blocked = false
     for _,cell in pairs(tes3.getActiveCells()) do
         for ref in cell:iterateReferences(tes3.objectType.miscItem) do
             if (ref
@@ -101,6 +124,11 @@ local function onCollision(e)
             and ref.itemData
             and ref.itemData.soul
             and getDistace(ref, position)) then
+                if cf.blockBlackSoulGems and isBlackSoulGem(ref.object) then
+                    tes3.messageBox("The soul bound within this black soul gem cannot be released — it is claimed by the Ideal Masters of Soul Cairn.")
+                    blocked = true
+                    break
+                end
                 summon = tes3.createReference{object = ref.itemData.soul, position = position, cell = cell}
                 tes3.playSound{sound = "conjuration hit", reference = tes3.player}
                 for _,child in ipairs(summon.sceneNode.children) do
@@ -125,8 +153,9 @@ local function onCollision(e)
                 break
             end
         end
+        if blocked then break end
     end
-    if not summon then
+    if not summon and not blocked then
         tes3.messageBox("%s", tes3.findGMST("sMagicInvalidTarget").value)
     end
 end
@@ -245,6 +274,21 @@ local function registerModConfig()
         step     = 1,
         jump     = 5,
         variable = mwse.mcm.createTableVariable{id = "conjurationRequired", table = cf}
+    }
+
+    catSR:createYesNoButton{
+        label       = "Block release from black soul gems?",
+        description = "If enabled, Soul Release cannot be used on souls trapped inside black soul gems.\n\n"
+                .. "Black souls are bound to the Soul Cairn and cannot be freed. Works automatically\n"
+                .. "with Seph's NPC Soul Trapping if installed, including any black soul gems added by other mods.",
+        variable    = mwse.mcm.createTableVariable{id = "blockBlackSoulGems", table = cf}
+    }
+
+    catSR:createYesNoButton{
+        label       = "Treat Azura's Star as a black soul gem?",
+        description = "If enabled, souls inside Azura's Star also cannot be released.\n\n"
+                .. "Only has any effect when 'Block release from black soul gems' is enabled.",
+        variable    = mwse.mcm.createTableVariable{id = "blockAzurasStar", table = cf}
     }
 end
 event.register("modConfigReady", registerModConfig)
