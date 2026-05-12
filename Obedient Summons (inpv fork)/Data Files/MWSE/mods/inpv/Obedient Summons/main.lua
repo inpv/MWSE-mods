@@ -1,9 +1,12 @@
 ---@diagnostic disable: undefined-field
 local mod = {
-    name = "Obedient Summons",
-    ver = "2.0",
-    cf = {onOff = true, key = {keyCode = tes3.scanCode.l, isShiftDown = false, isAltDown = false, isControlDown = false}, dropDown = 0, slider = 5, sliderpercent = 50, blocked = {}, npcs = {}, textfield = "hello", switch = false, conjurationRequired = 70}
-            }
+    name = "Obedient Summons (inpv fork)",
+    ver = "2.1",
+    cf = {
+        onOff               = true,
+        conjurationRequired = 70,
+    }
+}
 local cf = mwse.loadConfig(mod.name, mod.cf)
 local framework = include("OperatorJack.MagickaExpanded.magickaExpanded")
 if not framework then return end
@@ -48,6 +51,7 @@ end
 ---comment
 ---@param e table|activateEventData
 event.register("activate", function(e)
+    if not cf.onOff then return end
     if e.activator ~= tes3.player then return end
     local summon = e.target
     if not valid(summon) then
@@ -156,7 +160,8 @@ local function addEffect()
 		onTick = function(e) e:trigger() end,
         onCollision = onCollision
 	})
-end event.register("magicEffectsResolved", addEffect)
+end
+event.register("magicEffectsResolved", addEffect)
 
 local function registerSpells()
     framework.spells.createBasicSpell({
@@ -165,7 +170,8 @@ local function registerSpells()
         effect = tes3.effect.soulRelease,
         range = tes3.effectRange.target,
     })
-end event.register("MagickaExpanded:Register", registerSpells)
+end
+event.register("MagickaExpanded:Register", registerSpells)
 
 local count = 0
 
@@ -180,7 +186,7 @@ local function onMobileActivated(e)
 
     if tes3.player then
         local conjSkill = tes3.player.mobile:getSkillValue(tes3.skill.conjuration)
-        if conjSkill < (cf.minConjuration or 70) then
+        if conjSkill < (cf.conjurationRequired or 70) then
             return
         end
     end
@@ -203,146 +209,48 @@ local function onMobileActivated(e)
         end
     end
     e.reference.data.spammer_srdoonce = true
-end event.register("mobileActivated", onMobileActivated, {priority = -500})
-
-
-local function getExclusionList()
-    local fullbooklist = {}
-    for book in tes3.iterateObjects(tes3.objectType.book) do
-        if not (string.find(book.id:lower(), "skill")) then
-            table.insert(fullbooklist, book.id)
-        end
-    end
-    table.sort(fullbooklist)
-    return fullbooklist
 end
+event.register("mobileActivated", onMobileActivated, {priority = -500})
 
 local function registerModConfig()
     local template = mwse.mcm.createTemplate(mod.name)
     template:saveOnClose(mod.name, cf)
     template:register()
 
-    local page = template:createSideBarPage({label="\""..mod.name.."\" Settings"})
-    page.sidebar:createInfo{ text = "Welcome to \""..mod.name.."\" Configuration Menu. \n \n \n A mod by Spammer."}
-    page.sidebar:createHyperLink{ text = "Spammer's Nexus Profile", url = "https://www.nexusmods.com/users/140139148?tab=user+files" }
+    local page = template:createSideBarPage({label = '"' .. mod.name .. '" Settings'})
+    page.sidebar:createInfo{
+        text = 'Welcome to "' .. mod.name .. '" Configuration Menu.\n\nA mod by Spammer & inpv.'
+    }
+    page.sidebar:createHyperLink{
+        text = "Spammer's Nexus Profile",
+        url  = "https://www.nexusmods.com/users/140139148?tab=user+files"
+    }
 
-    local category0 = page:createCategory(" ")
-    category0:createOnOffButton{label = " ", description = " ", variable = mwse.mcm.createTableVariable{id = "onOff", table = cf}}
+    -- General
+    local catGeneral = page:createCategory("General")
+    catGeneral:createOnOffButton{
+        label       = "Enable mod",
+        description = "Toggles the mod on or off.",
+        variable    = mwse.mcm.createTableVariable{id = "onOff", table = cf}
+    }
 
-    category0:createKeyBinder{label = " ", description = " ", allowCombinations = false, variable = mwse.mcm.createTableVariable{id = "key", table = cf, restartRequired = true, defaultSetting = {keyCode = tes3.scanCode.l, isShiftDown = false, isAltDown = false, isControlDown = false}}}
-
-    local categorySR = page:createCategory("Soul Release")
-
-    categorySR:createSlider{
+    -- Soul Release
+    local catSR = page:createCategory("Soul Release")
+    catSR:createSlider{
         label       = "Required Conjuration skill: %s",
         description = "Spell merchants will only offer Soul Release once the player reaches this Conjuration skill level.\n\n"
-                   .. "Because the flag is set per-NPC only when the requirement is met, existing conjurers will 'discover' the spell naturally as your skill grows.",
+                   .. "The check runs again each time an NPC is activated, so the spell will appear naturally as your skill grows.",
         min      = 0,
         max      = 100,
         step     = 1,
         jump     = 5,
-        variable = mwse.mcm.createTableVariable{id = "conjurationRequired", table = cf, defaultSetting = 70}
+        variable = mwse.mcm.createTableVariable{id = "conjurationRequired", table = cf}
     }
-
-
-    local category1 = page:createCategory(" ")
-    local elementGroup = category1:createCategory("")
-
-    elementGroup:createDropdown { description = " ",
-        options  = {
-            { label = " ", value = 0 },
-            { label = " ", value = 1 },
-            { label = " ", value = 2 },
-            { label = " ", value = 3 },
-            { label = " ", value = 4 },
-            { label = " ", value = -1}
-        },
-        variable = mwse.mcm:createTableVariable {
-            id    = "dropDown",
-            table = cf
-        }
-    }
-
-    elementGroup:createTextField{
-        label = " ",
-        variable = mwse.mcm.createTableVariable{
-            id = "textfield",
-            table = cf,
-            numbersOnly = false,
-        }
-    }
-
-    local category2 = page:createCategory(" ")
-    local subcat = category2:createCategory(" ")
-
-    subcat:createSlider{label = " ", description = " ", min = 0, max = 10, step = 1, jump = 1, variable = mwse.mcm.createTableVariable{id = "slider", table = cf}}
-
-    subcat:createSlider{label = " ".."%s%%", description = " ", min = 0, max = 100, step = 1, jump = 10, variable = mwse.mcm.createTableVariable{id = "sliderpercent", table = cf}}
-
-    template:createExclusionsPage{label = " ", description = " ", variable = mwse.mcm.createTableVariable{id = "blocked", table = cf}, filters = {{label = " ", callback = getExclusionList}}}
-
-    template:createExclusionsPage{label = " ", description = " ", variable = mwse.mcm.createTableVariable{id = "npcs", table = cf}, filters = {{label = "NPCs", type = "Object", objectType = tes3.objectType.npc}}}
-
-    local page2 = template:createSideBarPage({label = "Extermination list"})
-    page2:createButton{
-        buttonText = "Switch",
-        callback = function()
-            cf.switch = not cf.switch
-            local pageBlock = template.elements.pageBlock
-            pageBlock:destroyChildren()
-            page2:create(pageBlock)
-            template.currentPage = page2
-            pageBlock:getTopLevelParent():updateLayout()
-        end,
-        inGameOnly = false}
-    local category = page2:createCategory("")
-    category:createInfo{
-        text = "",
-        inGameOnly = false,
-        postCreate = function(self)
-        if cf.switch then
-            self.elements.info.text = "Creatures gone extinct:"
-            self.elements.info.color = tes3ui.getPalette("journal_finished_quest_pressed_color")
-        else
-            self.elements.info.text = "Creatures you've killed:"
-            self.elements.info.color = tes3ui.getPalette("journal_finished_quest_pressed_color")
-        end
-    end}
-    category:createInfo{
-        text = "Load a saved game to see this.",
-        inGameOnly = true,
-        postCreate = function(self)
-        if cf.switch then
-            if tes3.player then
-                local list = ""
-                for actor,value in pairs(tes3.getKillCounts()) do
-                    if (actor.objectType == tes3.objectType.creature) and (value >= tonumber(cf.slider)) then
-                        list = actor.name.."s (RIP)".."\n" .. list
-                    end
-                end
-                if list == "" then
-                    list = "None."
-                end
-                self.elements.info.text = list
-            end
-        else
-            if tes3.player then
-                local list = ""
-                for actor,value in pairs(tes3.getKillCounts()) do
-                    if (actor.objectType == tes3.objectType.creature) and actor.cloneCount > 1 then
-                        list = actor.name.."s: "..value.."\n" .. list
-                    end
-                end
-                if list == "" then
-                    list = "None."
-                end
-                self.elements.info.text = list
-            end
-        end
-    end}
-end --event.register("modConfigReady", registerModConfig)
+end
+event.register("modConfigReady", registerModConfig)
 
 local function initialized()
-    print("["..mod.name..", by Spammer] "..mod.ver.." Initialized!")
-end event.register("initialized", initialized, {priority = -1000})
+    print("["..mod.name..", by Spammer & inpv] "..mod.ver.." Initialized!")
+end
+event.register("initialized", initialized, {priority = -1000})
 
