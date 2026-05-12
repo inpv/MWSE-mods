@@ -62,7 +62,7 @@ local function isBlackSoulGem(soulGem)
     if not soulGem then return false end
     local id = soulGem.id:lower()
     -- Seph's NPC Soul Trapping black soul gem
-    if id == "AB_Misc_SoulGemBlack" then return true end
+    if id == "ab_misc_soulgemblack" then return true end
     -- Azura's Star (player-configurable)
     if cf.blockAzurasStar and id == "misc_soulgem_azura" then return true end
     -- Any additional gems registered by other mods through Seph's interop
