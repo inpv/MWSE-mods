@@ -150,7 +150,7 @@ local function addEffect()
         hasNoMagnitude = true,
 
 		-- Graphics/sounds.
-		icon = "Spammer\\Soul_Release_MW.tga",
+		icon = "inpv\\Soul_Release_MW.tga",
         lighting = { 0.8, 0.8, 0.2 },
 		-- Required callbacks.
 		onTick = function(e) e:trigger() end,
