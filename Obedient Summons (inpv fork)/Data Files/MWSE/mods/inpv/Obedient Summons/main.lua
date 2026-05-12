@@ -2,7 +2,7 @@
 local mod = {
     name = "Obedient Summons",
     ver = "2.0",
-    cf = {onOff = true, key = {keyCode = tes3.scanCode.l, isShiftDown = false, isAltDown = false, isControlDown = false}, dropDown = 0, slider = 5, sliderpercent = 50, blocked = {}, npcs = {}, textfield = "hello", switch = false}
+    cf = {onOff = true, key = {keyCode = tes3.scanCode.l, isShiftDown = false, isAltDown = false, isControlDown = false}, dropDown = 0, slider = 5, sliderpercent = 50, blocked = {}, npcs = {}, textfield = "hello", switch = false, conjurationRequired = 70}
             }
 local cf = mwse.loadConfig(mod.name, mod.cf)
 local framework = include("OperatorJack.MagickaExpanded.magickaExpanded")
@@ -173,26 +173,36 @@ local function onMobileActivated(e)
     if e.reference.object.objectType ~= tes3.objectType.npc then
         return
     end
+
     if not (e.mobile and e.mobile.object:offersService(tes3.merchantService.spells)) then
         return
     end
+
+    if tes3.player then
+        local conjSkill = tes3.player.mobile:getSkillValue(tes3.skill.conjuration)
+        if conjSkill < (cf.minConjuration or 70) then
+            return
+        end
+    end
+
     if e.reference.data.spammer_srdoonce then
         return
     end
-        if math.random(0, 100) < 5 then
+
+    if math.random(0, 100) < 5 then
+        tes3.addSpell({reference = e.mobile, spell = "Spa_ME_SoulRelease"})
+        --print(e.mobile.object.name)
+        count = 0
+    else
+        count = count+1
+        --print(count)
+        if count >= 20 then
             tes3.addSpell({reference = e.mobile, spell = "Spa_ME_SoulRelease"})
             --print(e.mobile.object.name)
             count = 0
-        else
-            count = count+1
-            --print(count)
-            if count >= 20 then
-                tes3.addSpell({reference = e.mobile, spell = "Spa_ME_SoulRelease"})
-                --print(e.mobile.object.name)
-                count = 0
-            end
         end
-        e.reference.data.spammer_srdoonce = true
+    end
+    e.reference.data.spammer_srdoonce = true
 end event.register("mobileActivated", onMobileActivated, {priority = -500})
 
 
@@ -220,6 +230,20 @@ local function registerModConfig()
     category0:createOnOffButton{label = " ", description = " ", variable = mwse.mcm.createTableVariable{id = "onOff", table = cf}}
 
     category0:createKeyBinder{label = " ", description = " ", allowCombinations = false, variable = mwse.mcm.createTableVariable{id = "key", table = cf, restartRequired = true, defaultSetting = {keyCode = tes3.scanCode.l, isShiftDown = false, isAltDown = false, isControlDown = false}}}
+
+    local categorySR = page:createCategory("Soul Release")
+
+    categorySR:createSlider{
+        label       = "Required Conjuration skill: %s",
+        description = "Spell merchants will only offer Soul Release once the player reaches this Conjuration skill level.\n\n"
+                   .. "Because the flag is set per-NPC only when the requirement is met, existing conjurers will 'discover' the spell naturally as your skill grows.",
+        min      = 0,
+        max      = 100,
+        step     = 1,
+        jump     = 5,
+        variable = mwse.mcm.createTableVariable{id = "conjurationRequired", table = cf, defaultSetting = 70}
+    }
+
 
     local category1 = page:createCategory(" ")
     local elementGroup = category1:createCategory("")
