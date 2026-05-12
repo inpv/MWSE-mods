@@ -117,7 +117,7 @@ local function onCollision(e)
                 if ref.itemData.owner then
                     tes3.triggerCrime{criminal = caster, type = tes3.crimeType.theft, victim = ref.itemData.owner, value = ref.object.value}
                 end
-                ref.itemData = nil
+                ref:delete()
                 break
             end
         end
