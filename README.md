@@ -13,6 +13,9 @@ A collection of MWSE-Lua mods for TES3:Morrowind.
 <p><b>MAB0's manipulated - inpv delayed fork</b></p>
 <p>A fork of MAB0's manipulated mod with the addition of spell expiration mechanic (NPCs who saw the effect application report it as a crime only after the effect expires, like how Charm Person works in D&D), also adds crime avoidance for high enough Illusion skill (100 by default, configurable in MCM).</p>
 
+<p><b>Obedient Summons (inpv fork)</b></p>
+<p>A fork of Obedient Summons with some mechanics' and lore-based fixes: skill gate with configurable level for the Soul Release spell to appear at spell merchants, destruction of soul gems from which the souls were released, as well as blocking Soul Release of black souls from Seph's Black Soul Gems and Azura's Star (configurable). Also cleaned up leftover code.</p>
+
 <p><b>Sepulchral Curses</b></p>
 <p>Makes robbing tombs and barrows harder by adding a chance of summoning a random angry undead/elemental daedra when opening burial containers.</p>
 
