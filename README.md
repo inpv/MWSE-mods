@@ -1,6 +1,9 @@
 # MWSE-mods
 A collection of MWSE-Lua mods for TES3:Morrowind.
 
+<p><b>Enhanced Light (inpv fork)</b></p>
+<p>A fork of OperatorJack's Enhanced Light, fixing the issue of MWSE mod initialization, when the spell defaulted back to vanilla Light spell variant. Makes Enhanced Light initialize only AFTER Magicka Expanded (also fixes the issue with Class Starting Spells).</p>
+
 <p><b>Equipment Requirements Extended</b></p>
 <p>A fork of Necrolesian's edit of Equipment Requirements with added support for Skills Module-based misc skills (Staff Skill at the moment), Magicka Expanded and TR bound weapons, armor and ammo.</p>
 
